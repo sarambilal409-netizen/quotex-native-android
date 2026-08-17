@@ -5,28 +5,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Unzip Project
         run: |
-          ls *.zip
-          unzip -o *.zip
+          unzip -o *.zip || true
+          # Check if folder exists and move files
           if [ -d "quotex_native_android" ]; then
-            shopt -s dotglob nullglob
-            mv quotex_native_android/*. 2>/dev/null || true
+            mv quotex_native_android/*. || true
+            mv quotex_native_android/.*. 2>/dev/null || true
             rm -rf quotex_native_android
           fi
           rm -f *.zip
           ls -la
+
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Build APK
         run: |
-          chmod +x gradlew || true
-          if [ -f "gradlew" ]; then./gradlew assembleDebug; else gradle assembleDebug; fi
+          ls -la
+          gradle assembleDebug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
